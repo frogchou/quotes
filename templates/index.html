@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Quotes</h1>
+<form method="get" class="search-form">
+    <input type="text" name="q" placeholder="Search content or insight" value="{{ keyword }}">
+    <input type="text" name="author" placeholder="Author" value="{{ author }}">
+    <input type="text" name="source" placeholder="Source" value="{{ source }}">
+    <button type="submit">Search</button>
+</form>
+<div class="quote-list">
+    {% for quote in quotes %}
+    <article class="quote-card">
+        <div class="quote-content">{{ quote.content|highlight(keyword)|safe }}</div>
+        {% if quote.explanation %}<div class="quote-explanation">{{ quote.explanation|highlight(keyword)|safe }}</div>{% endif %}
+        <div class="meta">{% if quote.author %}<span>{{ quote.author }}</span>{% endif %}{% if quote.source %}<span>{{ quote.source }}</span>{% endif %} <span>by {{ quote.owner.username }}</span></div>
+        <div class="actions">
+            <a href="/quotes/{{ quote.id }}">Details</a>
+            {% if user %}
+            <form method="post" action="/quotes/{{ quote.id }}/react" class="inline-form">
+                <input type="hidden" name="reaction_type" value="like">
+                <button type="submit" class="btn-ghost {% if reactions.get(quote.id) and 'like' in reactions.get(quote.id) %}active{% endif %}">❤ Like</button>
+            </form>
+            <form method="post" action="/quotes/{{ quote.id }}/react" class="inline-form">
+                <input type="hidden" name="reaction_type" value="collect">
+                <button type="submit" class="btn-ghost {% if reactions.get(quote.id) and 'collect' in reactions.get(quote.id) %}active{% endif %}">🔖 Collect</button>
+            </form>
+            {% endif %}
+            {% if user and quote.owner_id == user.id %}
+            <a href="/quotes/{{ quote.id }}/edit">Edit</a>
+            <form method="post" action="/quotes/{{ quote.id }}/delete" class="inline-form" onsubmit="return confirm('Delete this quote?');">
+                <button type="submit" class="danger">Delete</button>
+            </form>
+            {% endif %}
+        </div>
+    </article>
+    {% else %}
+    <p>No quotes found.</p>
+    {% endfor %}
+</div>
+<div class="pagination">
+    {% set total_pages = (total // page_size) + (1 if total % page_size else 0) %}
+    {% if total_pages > 1 %}
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="current">{{ p }}</span>
+            {% else %}
+            <a href="?q={{ keyword }}&author={{ author }}&source={{ source }}&page={{ p }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

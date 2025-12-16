@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>My Quotes</h1>
+<p><a href="/quotes/new" class="button">Add new</a></p>
+<div class="quote-list">
+    {% for quote in quotes %}
+    <article class="quote-card">
+        <div class="quote-content">{{ quote.content }}</div>
+        <div class="meta">{% if quote.author %}<span>{{ quote.author }}</span>{% endif %}{% if quote.source %}<span>{{ quote.source }}</span>{% endif %}</div>
+        <div class="actions">
+            <a href="/quotes/{{ quote.id }}">View</a>
+            <a href="/quotes/{{ quote.id }}/edit">Edit</a>
+            <form method="post" action="/quotes/{{ quote.id }}/delete" class="inline-form" onsubmit="return confirm('Delete?');">
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
+    </article>
+    {% else %}
+    <p>No quotes yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
