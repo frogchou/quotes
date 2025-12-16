@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  web:
+    build: .
+    volumes:
+      - ./data:/data
+    environment:
+      - DATABASE_URL=sqlite:////data/app.db
+      - SECRET_KEY=changeme-secret
+    expose:
+      - "8000"
+  nginx:
+    image: nginx:1.25
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+volumes:
+  data:

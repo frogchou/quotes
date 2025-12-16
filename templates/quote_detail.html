@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<article class="quote-detail">
+    <h1>{{ quote.author or 'Quote' }}</h1>
+    <div class="quote-content">{{ quote.content }}</div>
+    {% if quote.explanation %}<div class="quote-explanation">{{ quote.explanation }}</div>{% endif %}
+    <div class="meta">{% if quote.author %}<span>{{ quote.author }}</span>{% endif %}{% if quote.source %}<span>{{ quote.source }}</span>{% endif %}<span>by {{ quote.owner.username }}</span></div>
+    <div class="actions">
+        {% if user %}
+        <form method="post" action="/quotes/{{ quote.id }}/react" class="inline-form">
+            <input type="hidden" name="reaction_type" value="like">
+            <button type="submit" class="btn-ghost {% if 'like' in reactions %}active{% endif %}">❤ Like</button>
+        </form>
+        <form method="post" action="/quotes/{{ quote.id }}/react" class="inline-form">
+            <input type="hidden" name="reaction_type" value="collect">
+            <button type="submit" class="btn-ghost {% if 'collect' in reactions %}active{% endif %}">🔖 Collect</button>
+        </form>
+        {% endif %}
+        {% if user and quote.owner_id == user.id %}
+        <a href="/quotes/{{ quote.id }}/edit">Edit</a>
+        {% endif %}
+    </div>
+    <div class="share">
+        <p>Share this quote:</p>
+        <div class="share-row">
+            <input type="text" value="{{ share_url }}" readonly id="share-link">
+            <button type="button" onclick="copyLink()">Copy Link</button>
+        </div>
+        <div class="qr">
+            <img src="{{ qr_uri }}" alt="QR Code for sharing">
+            <div class="qr-note">Scan with WeChat to open</div>
+        </div>
+    </div>
+</article>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="quote-list">
+    {% for quote in quotes %}
+    <article class="quote-card">
+        <div class="quote-content">{{ quote.content }}</div>
+        <div class="meta">{% if quote.author %}<span>{{ quote.author }}</span>{% endif %}{% if quote.source %}<span>{{ quote.source }}</span>{% endif %}</div>
+        <a href="/quotes/{{ quote.id }}">View</a>
+    </article>
+    {% else %}
+    <p>Nothing here yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

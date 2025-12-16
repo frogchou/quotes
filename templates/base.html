@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or 'Quotes' }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% if meta_description %}<meta name="description" content="{{ meta_description }}">{% endif %}
+    {% if og_title %}
+    <meta property="og:title" content="{{ og_title }}">
+    <meta property="og:description" content="{{ og_description }}">
+    <meta property="og:url" content="{{ og_url }}">
+    {% endif %}
+</head>
+<body>
+<header class="topbar">
+    <div class="container">
+        <a href="/" class="brand">Quotes</a>
+        <nav>
+            <a href="/">All Quotes</a>
+            {% if user %}
+            <a href="/quotes/new">New Quote</a>
+            <a href="/me/quotes">My Quotes</a>
+            <a href="/me/likes">My Likes</a>
+            <a href="/me/collections">My Collections</a>
+            <form method="post" action="/logout" class="inline-form"><button type="submit">Logout ({{ user.username }})</button></form>
+            {% else %}
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+<main class="container">
+    {% if flash %}
+    <div class="flash">{{ flash }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+<footer class="footer">
+    <div class="container">A calm place for memorable words.</div>
+</footer>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

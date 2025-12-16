@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{% if quote %}Edit Quote{% else %}New Quote{% endif %}</h1>
+<form method="post" action="{% if quote %}/quotes/{{ quote.id }}/edit{% else %}/quotes{% endif %}" class="quote-form">
+    <label>Content<textarea name="content" required rows="5">{{ quote.content if quote else '' }}</textarea></label>
+    <label>Author<input type="text" name="author" value="{{ quote.author if quote else '' }}"></label>
+    <label>Source<input type="text" name="source" value="{{ quote.source if quote else '' }}"></label>
+    <label>Explanation<textarea name="explanation" rows="3">{{ quote.explanation if quote else '' }}</textarea></label>
+    <button type="submit">{% if quote %}Update{% else %}Create{% endif %}</button>
+</form>
+{% endblock %}
