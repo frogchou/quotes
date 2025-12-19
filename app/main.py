@@ -5,11 +5,12 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from openai import APIStatusError, AuthenticationError, OpenAI
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
-from .config import APP_NAME, SECRET_KEY, PAGE_SIZE
+from .config import APP_NAME, OPENAI_API_KEY, OPENAI_MODEL, SECRET_KEY, PAGE_SIZE
 from .database import Base, engine, get_db
 from .models import User, Quote, UserQuoteReaction
 from .security import hash_password, verify_password
@@ -49,6 +50,12 @@ def redirect_with_message(url: str, message: str | None = None) -> RedirectRespo
 def get_flash(request: Request) -> Optional[str]:
     flash = request.cookies.get("flash")
     return flash
+
+
+def get_openai_client() -> OpenAI | None:
+    if not OPENAI_API_KEY:
+        return None
+    return OpenAI(api_key=OPENAI_API_KEY)
 
 
 # Auth pages
@@ -197,6 +204,46 @@ def create_quote(
     db.add(quote)
     db.commit()
     return redirect_with_message("/me/quotes", "Quote added.")
+
+
+@app.post("/api/ai-explanation")
+def ai_explanation(
+    content: str = Form(...),
+    prompt: str = Form(""),
+    user: User = Depends(require_user),
+):
+    cleaned_content = content.strip()
+    if not cleaned_content:
+        return json_error("invalid_input", "Content is required to generate an explanation.")
+    user_prompt = prompt.strip() or "请为这段语录写一段简洁的解释，并说明其含义和适用场景。"
+    try:
+        client = get_openai_client()
+        if not client:
+            return json_error("invalid_api_key", "OpenAI API key is missing or invalid.", status.HTTP_401_UNAUTHORIZED)
+        result = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant who explains quotes clearly and concisely in Chinese.",
+                },
+                {
+                    "role": "user",
+                    "content": f"{user_prompt}\n\n语录：{cleaned_content}",
+                },
+            ],
+            temperature=0.7,
+        )
+        explanation = result.choices[0].message.content.strip()
+        return {"explanation": explanation}
+    except AuthenticationError:
+        return json_error("invalid_api_key", "OpenAI API key is missing or invalid.", status.HTTP_401_UNAUTHORIZED)
+    except APIStatusError as exc:
+        if exc.status_code == 401:
+            return json_error("invalid_api_key", "OpenAI API key is missing or invalid.", status.HTTP_401_UNAUTHORIZED)
+        return json_error("ai_error", "OpenAI service returned an error. Please try again.", status.HTTP_502_BAD_GATEWAY)
+    except Exception:
+        return json_error("ai_error", "Failed to generate explanation. Please try again later.", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Quote detail

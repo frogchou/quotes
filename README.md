@@ -28,6 +28,17 @@ Environment variables (see `docker-compose.yml`):
 - `DATABASE_URL`: defaults to `sqlite:////data/app.db`
 - `SECRET_KEY`: session signing key
 - `PAGE_SIZE`: optional pagination size (default 10)
+- `OPENAI_API_KEY`: optional key for AI explanations
+- `OPENAI_MODEL`: optional model name for AI explanations (default `gpt-3.5-turbo`)
+
+Copy `.env.example` to `.env` and update the values to fit your environment:
+
+```bash
+cp .env.example .env
+# edit .env and set OPENAI_API_KEY=your-key
+```
+
+Docker Compose automatically picks up the `.env` file so the key is available to the web service.
 
 ## Development
 
@@ -48,3 +59,4 @@ Access at http://localhost:8000 (without Nginx).
 - Like & collect toggles with personal lists
 - Shareable quote pages with copy-link and QR code for WeChat
 - Minimal, content-focused UI using Jinja2 templates
+- AI explanation button on the quote form (requires a valid `OPENAI_API_KEY`; users will see a clear error if the key is missing or invalid)
